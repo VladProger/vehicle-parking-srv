@@ -38,11 +38,8 @@ public class ParkingServiceImpl implements ParkingService {
     public ParkVehicleResponse parkVehicle(VehicleType vehicleType, String vehicleReg) {
         ParkingRecord parkingRecord = new ParkingRecord(vehicleReg, vehicleType, occupyAvailableSpace(), LocalDateTime.now());
 
-        synchronized (this) {
-            if (parkedVehicles.containsKey(vehicleReg)) {
-                throw new IllegalArgumentException("Vehicle with provided registration number is already parked");
-            }
-            parkedVehicles.put(vehicleReg, parkingRecord);
+        if(parkedVehicles.putIfAbsent(vehicleReg, parkingRecord) != null) {
+            throw new IllegalArgumentException("Vehicle with provided registration number is already parked");
         }
 
         return ParkVehicleResponse.builder()
